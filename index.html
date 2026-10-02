@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你就是我的风景 · 张泽禹</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #070a12 0%, #141926 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', 'Quicksand', system-ui, sans-serif;
+            padding: 16px;
+        }
+
+        .game-container {
+            width: 860px;
+            max-width: 100%;
+            background: #0e121f;
+            border-radius: 36px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 0 2px #2e354a inset;
+            overflow: hidden;
+            backdrop-filter: blur(4px);
+            transition: box-shadow 0.8s ease;
+        }
+
+        .game-container[data-mood="calm"] { box-shadow: 0 0 30px #3f5e8c, 0 20px 40px black; }
+        .game-container[data-mood="joy"] { box-shadow: 0 0 40px #f5d742, 0 20px 40px black; }
+        .game-container[data-mood="anger"] { box-shadow: 0 0 40px #c0392b, 0 20px 40px black; }
+        .game-container[data-mood="sorrow"] { box-shadow: 0 0 40px #4a6fa5, 0 20px 40px black; }
+        .game-container[data-mood="fear"] { box-shadow: 0 0 40px #6b4e71, 0 20px 40px black; }
+        .game-container[data-mood="awe"] { box-shadow: 0 0 40px #a3d0c2, 0 20px 40px black; }
+        .game-container[data-mood="love"] { box-shadow: 0 0 45px #ff8da1, 0 20px 40px black; }
+        .game-container[data-mood="hope"] { box-shadow: 0 0 45px #7ee8fa, 0 20px 40px black; }
+        .game-container[data-mood="healing"] { box-shadow: 0 0 50px #b8e0d2, 0 20px 40px black; }
+
+        .screen {
+            padding: 28px 24px 24px;
+            background: radial-gradient(circle at 20% 30%, #1b2236, #090c14);
+            min-height: 580px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #b0c2e0;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #2e3b55;
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .title {
+            font-weight: 600;
+            color: #d6e3ff;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .title span {
+            background: #2e3b55;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            color: #a0b5dd;
+        }
+
+        .save-load { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .save-load button {
+            background: none;
+            border: 1px solid #3e4c66;
+            color: #b0c2e0;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .save-load button:hover {
+            background: #2a344b;
+            color: white;
+            border-color: #6d8ec9;
+        }
+
+        .story-area {
+            flex: 1;
+            background: #111927;
+            border-radius: 28px;
+            padding: 24px 22px;
+            margin: 8px 0 18px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 1px #202b40;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+            max-height: 440px;
+            scrollbar-width: thin;
+            scrollbar-color: #3d4d6b #0e121f;
+        }
+
+        .story-area::-webkit-scrollbar { width: 5px; }
+        .story-area::-webkit-scrollbar-track { background: #0e121f; }
+        .story-area::-webkit-scrollbar-thumb { background: #3d4d6b; border-radius: 10px; }
+
+        .text-content {
+            color: #e6edff;
+            font-size: 17px;
+            line-height: 1.8;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            word-break: break-word;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+            white-space: pre-wrap;
+        }
+
+        .mood-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 10px 18px;
+            background: #0b111e;
+            border-radius: 60px;
+            border: 1px solid #253046;
+            color: #a6bad9;
+            font-size: 14px;
+            transition: border-color 0.5s, color 0.5s;
+            flex-wrap: wrap;
+        }
+
+        .mood-emoji {
+            font-size: 26px;
+            filter: drop-shadow(0 0 8px currentColor);
+            transition: transform 0.3s;
+        }
+
+        .choice-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            background: #1b2338;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 28px;
+            color: #d3e0fc;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1);
+            box-shadow: 0 6px 0 #0b0f18, 0 8px 18px rgba(0, 0, 0, 0.6);
+            border: 1px solid #394a66;
+            flex: 1 0 auto;
+            min-width: 150px;
+            backdrop-filter: blur(4px);
+        }
+
+        .choice-btn:hover {
+            background: #263352;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #0b0f18, 0 14px 24px black;
+            border-color: #6c8ed1;
+        }
+
+        .choice-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #0b0f18, 0 8px 18px black;
+        }
+
+        .choice-btn.special {
+            background: #2e3f5e;
+            border-color: #c6a664;
+            color: #ffecb3;
+            box-shadow: 0 6px 0 #1a1f2c, 0 8px 18px black, 0 0 15px rgba(255, 215, 100, 0.3);
+        }
+
+        .choice-btn.special:hover {
+            background: #3e5277;
+            box-shadow: 0 8px 0 #1a1f2c, 0 14px 24px black, 0 0 25px #ffd966;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #4f5f7c;
+            font-size: 12px;
+            margin-top: 12px;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .footer-note i { font-style: normal; opacity: 0.7; }
+
+        .illustration {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 16px 0 8px;
+            filter: drop-shadow(0 0 25px rgba(210, 180, 140, 0.3));
+            animation: fadeIn 1.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .illustration svg { width: 250px; height: 250px; }
+
+        .locked-heart {
+            animation: pulse 2.5s infinite ease-in-out;
+            transform-origin: center;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.85; }
+            50% { transform: scale(1.06); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.85; }
+        }
+
+        .memory-fragment {
+            font-size: 12px;
+            color: #8a9ec7;
+            text-align: center;
+            margin-top: 12px;
+            padding: 8px;
+            border-top: 1px dashed #2e3b55;
+            animation: fadeIn 1s;
+            line-height: 1.6;
+        }
+
+        .stat-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #5f7398;
+            justify-content: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-bar span { color: #9aafd4; }
+
+        .achievement-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1b2338;
+            border: 1px solid #f5d742;
+            color: #ffecb3;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 14px;
+            box-shadow: 0 0 25px rgba(245, 215, 66, 0.4);
+            transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1);
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .achievement-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 小宝提示框 */
+        .xiaobao-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            backdrop-filter: blur(6px);
+        }
+
+        .xiaobao-modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .xiaobao-content {
+            background: linear-gradient(145deg, #1b2338, #0e121f);
+            border: 2px solid #f5d742;
+            border-radius: 32px;
+            padding: 36px 32px;
+            max-width: 480px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(245, 215, 66, 0.3), 0 20px 40px black;
+            transform: scale(0.9);
+            transition: transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1);
+            animation: xiaobaoGlow 3s infinite ease-in-out;
+        }
+
+        .xiaobao-modal.show .xiaobao-content {
+            transform: scale(1);
+        }
+
+        @keyframes xiaobaoGlow {
+            0%, 100% { box-shadow: 0 0 60px rgba(245, 215, 66, 0.3), 0 20px 40px black; }
+            50% { box-shadow: 0 0 80px rgba(245, 215, 66, 0.5), 0 20px 40px black; }
+        }
+
+        .xiaobao-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #ffe9a8, #f5d742, #c9a227);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            box-shadow: 0 0 30px rgba(245, 215, 66, 0.5);
+            animation: avatarFloat 3s infinite ease-in-out;
+        }
+
+        @keyframes avatarFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .xiaobao-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffecb3;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(245, 215, 66, 0.5);
+        }
+
+        .xiaobao-message {
+            font-size: 17px;
+            line-height: 2;
+            color: #e6edff;
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .xiaobao-heart {
+            font-size: 28px;
+            margin: 16px 0 8px;
+            animation: heartBeat 1.5s infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.15); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+        }
+
+        .xiaobao-btn {
+            background: #2e3f5e;
+            border: 1px solid #f5d742;
+            color: #ffecb3;
+            padding: 12px 36px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #1a1f2c, 0 0 20px rgba(245, 215, 66, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .xiaobao-btn:hover {
+            background: #3e5277;
+            box-shadow: 0 4px 0 #1a1f2c, 0 0 30px #f5d742;
+            transform: translateY(-2px);
+        }
+
+        .xiaobao-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1a1f2c, 0 0 20px #f5d742;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .progress-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #2e3b55;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.filled {
+            background: #f5d742;
+            box-shadow: 0 0 8px #f5d742;
+        }
+
+        .progress-dot.current {
+            background: #7ee8fa;
+            box-shadow: 0 0 12px #7ee8fa;
+            transform: scale(1.3);
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer" data-mood="calm">
+    <div class="screen">
+        <div class="header">
+            <div class="title">🌙 你就是我的风景 <span>张泽禹</span></div>
+            <div class="save-load">
+                <button id="saveBtn">💾 存档</button>
+                <button id="loadBtn">📂 读档</button>
+                <button id="resetBtn">🔄 重来</button>
+            </div>
+        </div>
+
+        <div class="mood-indicator" id="moodIndicator">
+            <span class="mood-emoji" id="moodEmoji">😌</span>
+            <span id="moodText">平静 · 婴儿时期</span>
+        </div>
+
+        <div class="story-area" id="storyArea">
+            <div class="text-content" id="storyText"></div>
+            <div class="illustration" id="illustrationContainer" style="display: none;"></div>
+            <div class="memory-fragment" id="memoryFragment" style="display: none;"></div>
+        </div>
+
+        <div class="choice-buttons" id="choiceContainer"></div>
+
+        <div class="progress-dots" id="progressDots"></div>
+
+        <div class="stat-bar" id="statBar">
+            <span>🌙 夜晚内耗: <span id="nightCount">0</span></span>
+            <span>💔 自我怀疑: <span id="doubtCount">0</span></span>
+            <span>🔮 记忆碎片: <span id="fragmentCount">0</span></span>
+        </div>
+
+        <div class="footer-note">
+            <i>🎵</i>  BGM: 星河低语 · 感应情绪  <i>🎵</i>
+        </div>
+    </div>
+</div>
+
+<!-- 小宝提示框 -->
+<div class="xiaobao-modal" id="xiaobaoModal">
+    <div class="xiaobao-content">
+        <div class="xiaobao-avatar">🐶</div>
+        <div class="xiaobao-title">💌 来自小宝的留言</div>
+        <div class="xiaobao-message" id="xiaobaoMessage"></div>
+        <div class="xiaobao-heart">💛</div>
+        <button class="xiaobao-btn" id="xiaobaoClose">我记住了</button>
+    </div>
+</div>
+
+<div class="achievement-toast" id="achievementToast"></div>
+
+<script>
+    // ==================== 游戏状态 ====================
+    let state = {
+        stage: 'infant',
+        mood: 'calm',
+        nights: 0,
+        selfDoubt: 0,
+        fragments: [],
+        achievements: [],
+        ending: null,
+        infantChoice: null,
+        toddlerChoice: null,
+        childChoice: null,
+        teenChoice: null,
+        nightChoices: [],
+        finalChoice: null,
+        totalChoices: 0,
+        kindChoices: 0,
+        braveChoices: 0,
+        seenXiaobao: false
+    };
+
+    let savedState = null;
+
+    // BGM
+    let audioCtx = null;
+    let bgmGain = null;
+    let currentOsc = [];
+
+    // DOM
+    const gameContainer = document.getElementById('gameContainer');
+    const storyText = document.getElementById('storyText');
+    const choiceContainer = document.getElementById('choiceContainer');
+    const moodEmoji = document.getElementById('moodEmoji');
+    const moodText = document.getElementById('moodText');
+    const moodIndicator = document.getElementById('moodIndicator');
+    const illustrationContainer = document.getElementById('illustrationContainer');
+    const memoryFragment = document.getElementById('memoryFragment');
+    const nightCount = document.getElementById('nightCount');
+    const doubtCount = document.getElementById('doubtCount');
+    const fragmentCount = document.getElementById('fragmentCount');
+    const progressDots = document.getElementById('progressDots');
+    const achievementToast = document.getElementById('achievementToast');
+    const xiaobaoModal = document.getElementById('xiaobaoModal');
+    const xiaobaoMessage = document.getElementById('xiaobaoMessage');
+    const xiaobaoClose = document.getElementById('xiaobaoClose');
+
+    // ==================== 情绪映射 ====================
+    const moodMap = {
+        calm:   { emoji: '😌', text: '平静', color: '#b0c2e0' },
+        joy:    { emoji: '✨', text: '喜悦', color: '#f5d742' },
+        anger:  { emoji: '🔥', text: '愤怒', color: '#c0392b' },
+        sorrow: { emoji: '💧', text: '悲伤', color: '#4a6fa5' },
+        fear:   { emoji: '🌑', text: '恐惧', color: '#6b4e71' },
+        awe:    { emoji: '🌌', text: '敬畏', color: '#a3d0c2' },
+        love:   { emoji: '💗', text: '被爱', color: '#ff8da1' },
+        hope:   { emoji: '🌅', text: '希望', color: '#7ee8fa' },
+        healing:{ emoji: '🕊️', text: '治愈', color: '#b8e0d2' }
+    };
+
+    // ==================== 阶段顺序 ====================
+    const stageOrder = [
+        'infant', 'toddler', 'child', 'teen',
+        'night1', 'night2', 'night3', 'night4', 'night5', 'night6', 'night7', 'night8', 'night9', 'night10',
+        'finalCage', 'endingOpen', 'endingClosed', 'endingThird', 'endingFourth', 'endingFifth'
+    ];
+
+    // ==================== 成就定义 ====================
+    const achievementDefs = [
+        { id: 'first_save', name: '初次封存', desc: '第一次存档', icon: '💾' },
+        { id: 'first_load', name: '记忆回响', desc: '第一次读档', icon: '📂' },
+        { id: 'all_nights', name: '十夜完整', desc: '经历所有夜晚', icon: '🌙' },
+        { id: 'no_doubt', name: '心无杂念', desc: '自我怀疑为0结束', icon: '🕊️' },
+        { id: 'high_doubt', name: '深渊凝视', desc: '自我怀疑达到15', icon: '🕳️' },
+        { id: 'fragment_master', name: '记忆收藏家', desc: '收集全部记忆碎片', icon: '🔮' },
+        { id: 'open_heart', name: '心释', desc: '打开笼子', icon: '🔓' },
+        { id: 'closed_heart', name: '笼中心', desc: '不打开笼子', icon: '🔒' },
+        { id: 'third_way', name: '未完成的风景', desc: '放下钥匙', icon: '🗝️' },
+        { id: 'fourth_way', name: '风景之外', desc: '发现隐藏结局', icon: '🌠' },
+        { id: 'fifth_way', name: '治愈之路', desc: '发现终极治愈结局', icon: '🕊️' },
+        { id: 'kind_soul', name: '温柔的人', desc: '做出7次温柔选择', icon: '💗' },
+        { id: 'brave_soul', name: '勇敢的人', desc: '做出7次勇敢选择', icon: '⚔️' },
+        { id: 'xiaobao_love', name: '被爱包围', desc: '看到小宝的留言', icon: '🐶' }
+    ];
+
+    // ==================== 音频系统 ====================
+    function initAudio() {
+        if (audioCtx) return;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            bgmGain = audioCtx.createGain();
+            bgmGain.gain.value = 0.055;
+            bgmGain.connect(audioCtx.destination);
+            startBGM('calm');
+        } catch (e) { console.warn('Audio not supported'); }
+    }
+
+    function stopBGM() {
+        currentOsc.forEach(o => { try { o.stop(); } catch(e){} });
+        currentOsc = [];
+    }
+
+    function startBGM(mood) {
+        if (!audioCtx) return;
+        stopBGM();
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const osc3 = audioCtx.createOscillator();
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+
+        const configs = {
+            calm:   { f1: 110, f2: 164.81, f3: 220, type: 'sine', cutoff: 500, lfo: 0.1 },
+            joy:    { f1: 261.63, f2: 329.63, f3: 392, type: 'triangle', cutoff: 1200, lfo: 0.25 },
+            anger:  { f1: 82.41, f2: 110, f3: 138.59, type: 'sawtooth', cutoff: 800, lfo: 0.5 },
+            sorrow: { f1: 98, f2: 146.83, f3: 196, type: 'sine', cutoff: 350, lfo: 0.08 },
+            fear:   { f1: 73.42, f2: 92.5, f3: 123.47, type: 'triangle', cutoff: 300, lfo: 0.3 },
+            awe:    { f1: 130.81, f2: 196, f3: 261.63, type: 'sine', cutoff: 900, lfo: 0.15 },
+            love:   { f1: 174.61, f2: 220, f3: 293.66, type: 'sine', cutoff: 1000, lfo: 0.2 },
+            hope:   { f1: 196, f2: 246.94, f3: 329.63, type: 'sine', cutoff: 1100, lfo: 0.18 },
+            healing:{ f1: 220, f2: 277.18, f3: 329.63, type: 'sine', cutoff: 1400, lfo: 0.12 }
+        };
+        const cfg = configs[mood] || configs.calm;
+
+        osc1.type = cfg.type;
+        osc1.frequency.value = cfg.f1;
+        osc2.type = cfg.type;
+        osc2.frequency.value = cfg.f2;
+        osc3.type = cfg.type;
+        osc3.frequency.value = cfg.f3;
+
+        lfo.type = 'sine';
+        lfo.frequency.value = cfg.lfo;
+        lfoGain.gain.value = 7;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc1.frequency);
+        lfoGain.connect(osc2.frequency);
+        lfoGain.connect(osc3.frequency);
+
+        filter.type = 'lowpass';
+        filter.frequency.value = cfg.cutoff;
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        osc3.connect(filter);
+        filter.connect(bgmGain);
+
+        osc1.start();
+        osc2.start();
+        osc3.start();
+        lfo.start();
+        currentOsc = [osc1, osc2, osc3, lfo];
+    }
+
+    // ==================== 小宝提示框 ====================
+    function showXiaobao(message) {
+        xiaobaoMessage.textContent = message;
+        xiaobaoModal.classList.add('show');
+        unlockAchievement('xiaobao_love');
+    }
+
+    xiaobaoClose.addEventListener('click', () => {
+        xiaobaoModal.classList.remove('show');
+        state.seenXiaobao = true;
+    });
+
+    // ==================== 成就系统 ====================
+    function unlockAchievement(id) {
+        if (state.achievements.includes(id)) return;
+        const def = achievementDefs.find(a => a.id === id);
+        if (!def) return;
+        state.achievements.push(id);
+        showToast(`${def.icon} 成就解锁：${def.name} —— ${def.desc}`);
+    }
+
+    function showToast(text) {
+        achievementToast.textContent = text;
+        achievementToast.classList.add('show');
+        setTimeout(() => achievementToast.classList.remove('show'), 3000);
+    }
+
+    // ==================== 存档/读档 ====================
+    function saveGame() {
+        try {
+            savedState = JSON.parse(JSON.stringify(state));
+            localStorage.setItem('zhangzeyu_save_v4', JSON.stringify(savedState));
+            unlockAchievement('first_save');
+            alert('✅ 记忆已封存 · 存档成功');
+        } catch (e) { alert('存档失败'); }
+    }
+
+    function loadGame() {
+        try {
+            const stored = localStorage.getItem('zhangzeyu_save_v4');
+            if (stored) {
+                savedState = JSON.parse(stored);
+                state = JSON.parse(JSON.stringify(savedState));
+                if (audioCtx) startBGM(state.mood);
+                unlockAchievement('first_load');
+                render();
+                alert('📂 记忆回响 · 读档成功');
+            } else { alert('没有找到存档...'); }
+        } catch (e) { alert('读档失败'); }
+    }
+
+    function resetGame() {
+        if (!confirm('确定要重新开始吗？所有进度将丢失。')) return;
+        state = {
+            stage: 'infant', mood: 'calm', nights: 0,
+            selfDoubt: 0, fragments: [], achievements: state.achievements,
+            ending: null, infantChoice: null, toddlerChoice: null,
+            childChoice: null, teenChoice: null, nightChoices: [],
+            finalChoice: null, totalChoices: 0, kindChoices: 0, braveChoices: 0,
+            seenXiaobao: state.seenXiaobao
+        };
+        if (audioCtx) startBGM('calm');
+        render();
+    }
+
+    // ==================== 渲染 ====================
+    function render() {
+        const moodInfo = moodMap[state.mood] || moodMap.calm;
+        gameContainer.setAttribute('data-mood', state.mood);
+        moodEmoji.textContent = moodInfo.emoji;
+        moodText.textContent = `${moodInfo.text} · ${getStageName(state.stage)}`;
+        moodIndicator.style.color = moodInfo.color;
+        moodIndicator.style.borderColor = moodInfo.color + '55';
+
+        nightCount.textContent = state.nights;
+        doubtCount.textContent = state.selfDoubt;
+        fragmentCount.textContent = state.fragments.length;
+
+        const currentIndex = stageOrder.indexOf(state.stage);
+        progressDots.innerHTML = '';
+        for (let i = 0; i < 20; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'progress-dot';
+            if (i < currentIndex) dot.classList.add('filled');
+            if (i === currentIndex) dot.classList.add('current');
+            progressDots.appendChild(dot);
+        }
+
+        updateStoryAndChoices();
+    }
+
+    function getStageName(stage) {
+        const names = {
+            infant: '婴儿时期', toddler: '幼童时期', child: '孩童时期',
+            teen: '少年时期', night1: '第一夜 · 内耗', night2: '第二夜 · 内耗',
+            night3: '第三夜 · 内耗', night4: '第四夜 · 深渊', night5: '第五夜 · 破晓',
+            night6: '第六夜 · 回声', night7: '第七夜 · 黎明', night8: '第八夜 · 自省',
+            night9: '第九夜 · 和解', night10: '第十夜 · 重生',
+            finalCage: '牢笼之心', endingOpen: '结局 · 心释',
+            endingClosed: '结局 · 笼中心', endingThird: '结局 · 未完成的风景',
+            endingFourth: '结局 · 风景之外', endingFifth: '结局 · 治愈之路'
+        };
+        return names[stage] || stage;
+    }
+
+    function recordChoice(type) {
+        state.totalChoices++;
+        if (type === 'kind') state.kindChoices++;
+        if (type === 'brave') state.braveChoices++;
+        if (state.kindChoices >= 7) unlockAchievement('kind_soul');
+        if (state.braveChoices >= 7) unlockAchievement('brave_soul');
+    }
+
+    // ==================== 核心叙事 ====================
+    function updateStoryAndChoices() {
+        illustrationContainer.style.display = 'none';
+        illustrationContainer.innerHTML = '';
+        memoryFragment.style.display = 'none';
+
+        let story = '';
+        let choices = [];
+        let fragmentText = '';
+
+        switch (state.stage) {
+            // ========== 婴儿时期 ==========
+            case 'infant':
+                story = `1997年，某个冬夜。\n你睁开眼睛，第一次看见光。\n暖黄的灯光里，妈妈的笑脸像月亮。\n你什么也不懂，只是用力呼吸。\n\n「你就是我的风景」——谁在耳边轻轻说？\n你哭了，但眼泪是热的。\n\n*婴儿时期，记忆像透明的泡泡，一碰就碎。*\n*但你记得那个声音的温度。*\n*那是你第一次知道，世界上有人爱你。*`;
+                choices = [
+                    { text: '👶 抓住妈妈的手指', mood: 'love', next: 'toddler', effect: () => { state.infantChoice = 'love'; recordChoice('kind'); }, fragment: '记忆碎片·温暖的触碰' },
+                    { text: '🌙 凝视昏暗的角落', mood: 'fear', next: 'toddler', effect: () => { state.infantChoice = 'fear'; recordChoice('brave'); }, fragment: '记忆碎片·未知的轮廓' },
+                    { text: '😴 闭上眼睛继续睡', mood: 'calm', next: 'toddler', effect: () => { state.infantChoice = 'calm'; }, fragment: '记忆碎片·梦的入口' },
+                    { text: '🤱 往妈妈怀里蹭了蹭', mood: 'healing', next: 'toddler', effect: () => { state.infantChoice = 'healing'; recordChoice('kind'); }, fragment: '记忆碎片·心跳的节奏' }
+                ];
+                break;
+
+            // ========== 幼童时期 ==========
+            case 'toddler':
+                story = `你学会走路了，摇摇晃晃。\n爸爸把你举高高，你咯咯笑。\n可有时候，你盯着窗外发呆：\n「为什么天空是蓝色的？」\n没人回答，但你感到一种莫名的敬畏。\n\n你开始有情绪了，小小的，像泡泡。\n有时候泡泡破了，你会愣很久。\n有一次你摔倒了，膝盖破了皮。\n你哭得很伤心，但妈妈抱你的时候，\n你觉得世界又完整了。\n\n*幼童时期，世界是一本翻不完的绘本。*\n*每一页都有新的颜色，也有新的困惑。*`;
+                choices = [
+                    { text: '🫧 追着泡泡跑', mood: 'joy', next: 'child', effect: () => { state.toddlerChoice = 'joy'; }, fragment: '记忆碎片·阳光下的泡泡' },
+                    { text: '🧸 抱着玩偶沉默', mood: 'sorrow', next: 'child', effect: () => { state.toddlerChoice = 'sorrow'; state.selfDoubt += 1; }, fragment: '记忆碎片·毛绒的安慰' },
+                    { text: '🎨 用手指在墙上画画', mood: 'awe', next: 'child', effect: () => { state.toddlerChoice = 'awe'; recordChoice('brave'); }, fragment: '记忆碎片·自由的涂鸦' },
+                    { text: '🌸 把小花别在妈妈头发上', mood: 'love', next: 'child', effect: () => { state.toddlerChoice = 'love'; recordChoice('kind'); }, fragment: '记忆碎片·妈妈的笑' }
+                ];
+                break;
+
+            // ========== 孩童时期 ==========
+            case 'child':
+                story = `你上小学了。\n同学们吵吵闹闹，你却喜欢一个人看云。\n有一次被老师批评，你攥紧拳头，又松开。\n愤怒像火，但很快被风吹灭。\n你开始做梦：梦里你是一颗星星，挂在夜空。\n\n「你就是我的风景」——那个声音又来了。\n你对着镜子，感到陌生又熟悉。\n\n有一次，你在作文里写：\n“我想成为一阵风，自由地吹。”\n老师给了你一个红红的“优”。\n你偷偷笑了，把作文本藏在枕头下。\n\n*孩童时期，第一次尝到孤独的滋味。*\n*但也第一次感受到，被理解的温暖。*`;
+                choices = [
+                    { text: '📖 把心事写进日记', mood: 'sorrow', next: 'teen', effect: () => { state.childChoice = 'sorrow'; state.selfDoubt += 1; }, fragment: '记忆碎片·带锁的笔记本' },
+                    { text: '⚡ 对着墙壁大喊', mood: 'anger', next: 'teen', effect: () => { state.childChoice = 'anger'; recordChoice('brave'); }, fragment: '记忆碎片·回声' },
+                    { text: '🌟 对着星星许愿', mood: 'awe', next: 'teen', effect: () => { state.childChoice = 'awe'; }, fragment: '记忆碎片·流星' },
+                    { text: '🤝 主动帮助同桌捡笔', mood: 'love', next: 'teen', effect: () => { state.childChoice = 'love'; recordChoice('kind'); }, fragment: '记忆碎片·谢谢' },
+                    { text: '🎵 跟着音乐课哼歌', mood: 'joy', next: 'teen', effect: () => { state.childChoice = 'joy'; }, fragment: '记忆碎片·旋律的种子' }
+                ];
+                break;
+
+            // ========== 少年时期 ==========
+            case 'teen':
+                story = `少年时期，你变得敏感而坚韧。\n聚光灯下，你微笑；黑暗中，你蜷缩。\n你常常问自己：\n“我配得上那些喜欢吗？”\n\n夜晚变得越来越长，\n你开始内耗——\n一遍遍回忆失误，一次次否定自己。\n但心底总有一个微弱的声音说：\n“你就是我的风景。”\n\n你开始练习吉他到深夜，\n手指上磨出了茧。\n那些茧，是你和世界对话的证明。\n\n*少年时期，心里住进了一只刺猬。*\n*它想拥抱，却总是先竖起刺。*`;
+                choices = [
+                    { text: '🌃 关掉灯，面对黑夜', mood: 'fear', next: 'night1', effect: () => { state.teenChoice = 'fear'; recordChoice('brave'); }, fragment: '记忆碎片·黑暗中的呼吸' },
+                    { text: '📝 写下鼓励自己的话', mood: 'awe', next: 'night1', effect: () => { state.teenChoice = 'awe'; }, fragment: '记忆碎片·给未来的信' },
+                    { text: '🎸 弹一首跑调的歌', mood: 'joy', next: 'night1', effect: () => { state.teenChoice = 'joy'; }, fragment: '记忆碎片·和弦的震动' },
+                    { text: '💭 想象十年后的自己', mood: 'hope', next: 'night1', effect: () => { state.teenChoice = 'hope'; }, fragment: '记忆碎片·未来的轮廓' }
+                ];
+                break;
+
+            // ========== 第一夜 ==========
+            case 'night1':
+                state.nights = 1;
+                story = `第一夜。\n你躺在床上，心跳像鼓点。\n“今天那个动作没做好……”\n“大家会不会失望？”\n你翻来覆去，枕头湿了一块。\n月光冷冷地照进来，你觉得自己像碎片。\n\n你开始数自己的缺点：\n不够高，不够瘦，不够优秀，不够……\n数到第七个的时候，你停住了。\n\n可是——\n远处隐隐传来一个声音：\n“你就是我的风景。”\n你捂住耳朵，但声音更清晰了。\n\n*第一夜，内耗像藤蔓，悄悄缠上脚踝。*\n*你第一次意识到，原来自己对自己这么苛刻。*`;
+                choices = [
+                    { text: '😔 沉溺在自责里', mood: 'sorrow', next: 'night2', effect: () => { state.selfDoubt += 2; state.nightChoices.push('sorrow'); }, fragment: '记忆碎片·湿掉的枕头' },
+                    { text: '✨ 试着深呼吸', mood: 'calm', next: 'night2', effect: () => { state.nightChoices.push('calm'); }, fragment: '记忆碎片·一次深呼吸' },
+                    { text: '📱 翻看以前的照片', mood: 'love', next: 'night2', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 1); recordChoice('kind'); }, fragment: '记忆碎片·笑容' },
+                    { text: '🎵 哼一首小时候的歌', mood: 'joy', next: 'night2', effect: () => { state.nightChoices.push('joy'); }, fragment: '记忆碎片·摇篮曲' },
+                    { text: '🫂 抱住自己，说“没关系”', mood: 'healing', next: 'night2', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·自我拥抱' }
+                ];
+                break;
+
+            // ========== 第二夜 ==========
+            case 'night2':
+                state.nights = 2;
+                story = `第二夜。\n你梦见自己站在空旷的舞台上，\n没有观众，没有灯光。\n你拼命唱歌，却发不出声音。\n恐惧攥住喉咙，你惊醒。\n\n“如果永远没人听见怎么办？”\n你缩成一团，像回到婴儿时期。\n但这次，你听到心跳——\n砰，砰，砰。\n那是你自己的声音，也是风景的一部分。\n\n你想起白天有人对你说“加油”，\n你当时只是笑了笑。\n现在那句话在黑暗中发着微光。\n\n*第二夜，恐惧像潮水，但心跳是船。*`;
+                choices = [
+                    { text: '🔥 愤怒地捶打枕头', mood: 'anger', next: 'night3', effect: () => { state.selfDoubt += 2; state.nightChoices.push('anger'); recordChoice('brave'); }, fragment: '记忆碎片·拳头上的红印' },
+                    { text: '🌌 想象一片星海', mood: 'awe', next: 'night3', effect: () => { state.nightChoices.push('awe'); }, fragment: '记忆碎片·银河' },
+                    { text: '🎧 听一首安静的歌', mood: 'calm', next: 'night3', effect: () => { state.nightChoices.push('calm'); state.selfDoubt = Math.max(0, state.selfDoubt - 1); }, fragment: '记忆碎片·旋律' },
+                    { text: '💭 想象最爱的人就在身边', mood: 'love', next: 'night3', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·无形的拥抱' },
+                    { text: '🕯️ 点一盏小夜灯', mood: 'hope', next: 'night3', effect: () => { state.nightChoices.push('hope'); }, fragment: '记忆碎片·微光' }
+                ];
+                break;
+
+            // ========== 第三夜 ==========
+            case 'night3':
+                state.nights = 3;
+                story = `第三夜。\n内耗像潮水，几乎将你淹没。\n你想起小时候，妈妈说的“风景”。\n你开始怀疑：我真的值得被爱吗？\n\n你翻看手机，看到一条粉丝留言：\n“泽禹，你笑起来很好看。”\n你盯着屏幕，眼眶发热。\n\n就在你快要放弃的时候，\n眼前浮现一个画面——\n一个精致的笼子，里面有一颗跳动的心。\n那是你的心。\n笼子外，一把金色的钥匙悬浮着。\n一个温柔的声音说：\n“小禹宙，钥匙给你。\n打开，或不打开，都是你的选择。”\n\n*第三夜，你第一次看清笼子的形状。*\n*它一直在那里，只是你以前不敢看。*`;
+                choices = [
+                    { text: '🔮 伸手触摸钥匙', mood: 'awe', next: 'night4', effect: () => { state.nightChoices.push('awe'); }, fragment: '记忆碎片·金属的凉意' },
+                    { text: '💧 哭着问为什么是我', mood: 'sorrow', next: 'night4', effect: () => { state.selfDoubt += 2; state.nightChoices.push('sorrow'); }, fragment: '记忆碎片·没有答案的问题' },
+                    { text: '💗 想起那些爱你的人', mood: 'love', next: 'night4', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·温暖的手' },
+                    { text: '📖 写一封信给笼中的自己', mood: 'healing', next: 'night4', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 1); recordChoice('kind'); }, fragment: '记忆碎片·信纸的温度' }
+                ];
+                break;
+
+            // ========== 第四夜 ==========
+            case 'night4':
+                state.nights = 4;
+                story = `第四夜。\n你坠入更深的黑暗。\n笼子变得更清晰了，你甚至能看见\n心上缠绕的锁链——\n那是每一次自我否定留下的痕迹。\n\n你想起七岁那年，第一次被说“不够好”。\n你想起十三岁那年，第一次躲在被子里哭。\n你想起昨天，你对着镜子说“再努力一点”。\n\n但你也想起——\n有人在你摔倒时扶了你一把。\n有人在你唱歌时用力鼓掌。\n有人在你沉默时，安静地陪着你。\n\n*第四夜，深渊里也有星光。*\n*那些星光，是你曾经忽略的温柔。*`;
+                choices = [
+                    { text: '⛓️ 触碰心上的锁链', mood: 'fear', next: 'night5', effect: () => { state.selfDoubt += 1; state.nightChoices.push('fear'); recordChoice('brave'); }, fragment: '记忆碎片·冰冷的铁' },
+                    { text: '🌟 呼唤那些温暖的名字', mood: 'love', next: 'night5', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·名字的光' },
+                    { text: '🎵 在心里唱一首歌', mood: 'joy', next: 'night5', effect: () => { state.nightChoices.push('joy'); }, fragment: '记忆碎片·无声的旋律' },
+                    { text: '🪞 对着镜子说“你辛苦了”', mood: 'healing', next: 'night5', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 3); recordChoice('kind'); }, fragment: '记忆碎片·镜中的温柔' }
+                ];
+                break;
+
+            // ========== 第五夜 ==========
+            case 'night5':
+                state.nights = 5;
+                story = `第五夜。\n天快亮了。\n你握着那把金色的钥匙，\n手心全是汗。\n\n笼子里的心还在跳，\n但锁链已经松了一些。\n你发现，钥匙其实一直在你手里——\n从婴儿时期，从第一次呼吸开始。\n\n你想起那个声音：\n“你就是我的风景。”\n这一次，你终于听清了——\n那是你自己的声音。\n\n你开始明白，内耗不是敌人，\n它是你对自己太温柔了。\n\n*第五夜，破晓之前。*\n*你第一次觉得，黑暗也没那么可怕。*`;
+                choices = [
+                    { text: '🌅 走向笼子', mood: 'awe', next: 'night6', effect: () => { state.nightChoices.push('awe'); }, fragment: '记忆碎片·黎明' },
+                    { text: '🫶 把手放在心口', mood: 'healing', next: 'night6', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·心跳的温度' }
+                ];
+                break;
+
+            // ========== 第六夜 ==========
+            case 'night6':
+                state.nights = 6;
+                story = `第六夜。\n你站在笼子面前，\n发现笼子上刻满了字——\n那是你从小到大对自己说过的所有话。\n\n“我不够好。”\n“我应该更努力。”\n“他们会不会失望？”\n“我配吗？”\n\n但也有一些，被你忽略了：\n“我今天笑了。”\n“我帮了别人。”\n“我坚持下来了。”\n“我值得。”\n\n你用手指描过那些字，\n发现刻痕深浅不一。\n那些最深的，往往是伤害自己的话。\n\n*第六夜，回声在笼中回荡。*\n*你第一次认真听自己说了什么。*`;
+                choices = [
+                    { text: '✍️ 用手指改写那些字', mood: 'hope', next: 'night7', effect: () => { state.nightChoices.push('hope'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('brave'); }, fragment: '记忆碎片·新的刻痕' },
+                    { text: '🤲 轻轻抱住笼子', mood: 'love', next: 'night7', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 3); recordChoice('kind'); }, fragment: '记忆碎片·温度' },
+                    { text: '🕊️ 对笼子说“我原谅你”', mood: 'healing', next: 'night7', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 4); recordChoice('kind'); }, fragment: '记忆碎片·原谅' }
+                ];
+                break;
+
+            // ========== 第七夜 ==========
+            case 'night7':
+                state.nights = 7;
+                story = `第七夜。\n黎明就在眼前。\n笼子里的心发出柔和的光，\n锁链已经全部松开，\n但笼门还关着。\n\n你手里握着钥匙。\n你知道，打开笼门的那一刻，\n所有情绪都会涌出来——\n那些你压抑的、逃避的、不敢面对的。\n\n但你也知道，\n它们都是你的一部分。\n\n你深吸一口气。\n\n*第七夜，你终于准备好面对自己。*\n*不是完美的自己，是真实的自己。*`;
+                choices = [
+                    { text: '🌅 走向笼子', mood: 'hope', next: 'night8', effect: () => { state.nightChoices.push('hope'); }, fragment: '记忆碎片·黎明' },
+                    { text: '💗 对笼子说“我爱你”', mood: 'healing', next: 'night8', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·我爱你' }
+                ];
+                break;
+
+            // ========== 第八夜 ==========
+            case 'night8':
+                state.nights = 8;
+                story = `第八夜。\n你坐在笼子旁边，\n开始回想这一路走来。\n\n婴儿时的第一声啼哭，\n幼童时摔破的膝盖，\n孩童时藏起来的日记，\n少年时深夜的吉他声……\n\n每一个你，都站在这里。\n小小的你，害怕的你，\n愤怒的你，温柔的你。\n\n他们都在看着你。\n没有责备，没有催促。\n只是安静地，陪着你。\n\n*第八夜，你与过去的自己重逢。*`;
+                choices = [
+                    { text: '🤝 牵起小时候自己的手', mood: 'healing', next: 'night9', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 3); recordChoice('kind'); }, fragment: '记忆碎片·小小的手' },
+                    { text: '🌌 对所有版本的自己说“辛苦了”', mood: 'love', next: 'night9', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·辛苦了' }
+                ];
+                break;
+
+            // ========== 第九夜 ==========
+            case 'night9':
+                state.nights = 9;
+                story = `第九夜。\n你终于打开了笼子的锁。\n但你还没有推开门。\n\n你把手放在笼门上，\n感受到心的温度。\n它在跳，很轻，很稳。\n\n“你准备好了吗？”你问自己。\n\n没有回答。\n但你知道，\n无论打不打开，\n你都不会再丢下它了。\n\n*第九夜，和解。*\n*不是和世界，是和自己。*`;
+                choices = [
+                    { text: '🫂 推开笼门，拥抱那颗心', mood: 'healing', next: 'night10', effect: () => { state.nightChoices.push('healing'); state.selfDoubt = Math.max(0, state.selfDoubt - 3); recordChoice('kind'); }, fragment: '记忆碎片·拥抱' },
+                    { text: '🌟 把心捧在手心', mood: 'love', next: 'night10', effect: () => { state.nightChoices.push('love'); state.selfDoubt = Math.max(0, state.selfDoubt - 2); recordChoice('kind'); }, fragment: '记忆碎片·掌心的温度' }
+                ];
+                break;
+
+            // ========== 第十夜 ==========
+            case 'night10':
+                state.nights = 10;
+                unlockAchievement('all_nights');
+                story = `第十夜。\n天亮了。\n\n你站在镜子前，\n镜子里的人对你笑了。\n\n你终于看清了——\n那颗心从来没有被关住。\n笼子是你为自己造的，\n但钥匙也一直在你手里。\n\n你深吸一口气，\n感觉到阳光照在脸上。\n\n“你就是我的风景。”\n你对自己说。\n\n*第十夜，重生。*`;
+                choices = [
+                    { text: '🌅 走向最终的自己', mood: 'healing', next: 'finalCage', effect: () => { state.nightChoices.push('healing'); }, fragment: '记忆碎片·重生' }
+                ];
+                break;
+
+            // ========== 最终选择 ==========
+            case 'finalCage':
+                showCageIllustration();
+                story = `笼中的心缓慢跳动。\n它既脆弱，又坚韧。\n你握着钥匙，手心出汗。\n\n打开笼子，意味着释放所有情绪——\n快乐、痛苦、愤怒、温柔……\n它们会涌出来，把你淹没，还是让你完整？\n\n或者，你可以不打开。\n让心留在笼中，安全，却孤独。\n\n又或者，你可以选择第三条路——\n把钥匙留在那里，转身离开，\n让时间给你答案。\n\n还有第四条路——\n坐下来，陪着它。\n\n「你就是我的风景」——\n这一次，声音来自你心底。\n\n*你与你的心，面对面。*`;
+                choices = [
+                    { text: '🔓 打开笼子', mood: 'love', next: 'endingOpen', effect: () => { state.finalChoice = 'open'; unlockAchievement('open_heart'); }, fragment: '' },
+                    { text: '🔒 不打开，保持现状', mood: 'sorrow', next: 'endingClosed', effect: () => { state.finalChoice = 'closed'; unlockAchievement('closed_heart'); }, fragment: '' },
+                    { text: '🗝️ 把钥匙放在笼子上，转身离开', mood: 'calm', next: 'endingThird', effect: () => { state.finalChoice = 'third'; unlockAchievement('third_way'); }, fragment: '' },
+                    { text: '🌟 对着笼子说：“我陪你。”', mood: 'hope', next: 'endingFourth', effect: () => { state.finalChoice = 'fourth'; unlockAchievement('fourth_way'); }, fragment: '' },
+                    { text: '🕊️ 打开笼子，然后抱住自己', mood: 'healing', next: 'endingFifth', effect: () => { state.finalChoice = 'fifth'; unlockAchievement('fifth_way'); }, fragment: '' }
+                ];
+                break;
+
+            // ========== 结局一：打开 ==========
+            case 'endingOpen':
+                story = `你转动钥匙。\n笼门打开，那颗心飞了出来——\n它化作无数光点，融入你的身体。\n\n你突然能感受到所有的情绪：\n婴儿的啼哭、幼年的欢笑、\n少年的迷茫、夜晚的内耗……\n它们不再可怕，因为你就是它们。\n\n你终于明白：\n你就是自己的风景。\n那些黑暗与光，都是风景的一部分。\n\n你睁开眼睛，天亮了。\n镜子里的人，对你笑了。\n\n*「你就是我的风景。」*\n\n—— 结局 · 心释 ——`;
+                choices = [{ text: '🔄 重新开始', mood: 'calm', next: 'restart' }];
+                setTimeout(() => {
+                    if (!state.seenXiaobao) {
+                        showXiaobao('小宝想对你说：\n\n“你已经做得很好了。\n不要总是责怪自己，\n不要总是觉得不够。\n你就是你，独一无二的你。\n\n好好爱自己，好吗？\n我爱你们。”💛');
+                    }
+                }, 800);
+                break;
+
+            // ========== 结局二：不打开 ==========
+            case 'endingClosed':
+                story = `你收回了手。\n钥匙化成尘埃，笼子沉入黑暗。\n那颗心依然跳动，但越来越微弱。\n\n你感到一种熟悉的平静，\n却也有一丝无法言说的空。\n\n或许有一天，你会再次找到钥匙。\n但此刻，你选择保护自己，不被伤害。\n\n你对自己说：\n“没关系，这样也很好。”\n\n*笼子还在，心还在。*\n*但你知道，它不会永远沉默。*\n\n—— 结局 · 笼中心 ——`;
+                choices = [{ text: '🔄 重新开始', mood: 'calm', next: 'restart' }];
+                setTimeout(() => {
+                    if (!state.seenXiaobao) {
+                        showXiaobao('小宝想对你说：\n\n“没关系的，\n慢慢来也可以。\n你不需要马上打开那扇门。\n\n但请记得，\n你值得被爱，\n包括被自己爱。\n\n好好爱自己，好吗？\n我爱你们。”💛');
+                    }
+                }, 800);
+                break;
+
+            // ========== 结局三：放下钥匙 ==========
+            case 'endingThird':
+                story = `你把钥匙轻轻放在笼子顶上。\n然后转身，走向黑暗的尽头。\n\n你没有打开笼子，\n也没有带走钥匙。\n你只是——\n允许自己暂时不选择。\n\n笼子里的心继续跳着，\n钥匙在微光中闪烁。\n你忽然笑了，因为你知道：\n钥匙永远在那里，\n而你，已经不再害怕。\n\n*有些答案，不需要急于找到。*\n*有些风景，需要留白。*\n\n—— 结局 · 未完成的风景 ——`;
+                choices = [{ text: '🔄 重新开始', mood: 'calm', next: 'restart' }];
+                setTimeout(() => {
+                    if (!state.seenXiaobao) {
+                        showXiaobao('小宝想对你说：\n\n“没关系的，\n你不需要现在就找到答案。\n有些路，慢慢走就好。\n\n但请记得，\n无论你选择什么，\n你都是值得被爱的。\n\n好好爱自己，好吗？\n我爱你们。”💛');
+                    }
+                }, 800);
+                break;
+
+            // ========== 结局四：我陪你 ==========
+            case 'endingFourth':
+                story = `你放下钥匙，\n双手轻轻握住笼子的栏杆。\n\n“我陪你。”\n你对着笼子里的心说。\n\n那一刻，笼子开始发光，\n锁链一根根断裂，\n但不是因为钥匙——\n是因为你终于承认了它的存在。\n\n心从笼中升起，\n它没有飞走，\n而是停在你的掌心，\n轻轻跳动。\n\n你带着它，走出了黑暗。\n\n*你不必打开笼子，也不必关着它。*\n*你只需要，陪着自己。*\n\n—— 结局 · 风景之外 ——`;
+                choices = [{ text: '🔄 重新开始', mood: 'calm', next: 'restart' }];
+                setTimeout(() => {
+                    if (!state.seenXiaobao) {
+                        showXiaobao('小宝想对你说：\n\n“你愿意陪着自己，\n这已经很了不起了。\n\n以后也要这样，\n不丢下自己，\n不责怪自己。\n\n好好爱自己，好吗？\n我爱你们。”💛');
+                    }
+                }, 800);
+                break;
+
+            // ========== 结局五：治愈之路 ==========
+            case 'endingFifth':
+                story = `你打开笼子，\n然后伸出手，\n抱住了那颗心。\n\n它在你怀里跳动，\n像一只受惊的小动物，\n慢慢安静下来。\n\n你抱着它，\n也抱着自己。\n\n“辛苦了。”\n你轻声说。\n\n那些内耗、怀疑、恐惧、愤怒，\n都化作眼泪，\n流了出来。\n\n但这一次，\n眼泪是热的，\n和婴儿时期一样热。\n\n你终于明白，\n治愈不是消灭黑暗，\n而是带着光，\n走进黑暗里。\n\n*你就是我的风景。*\n*你一直是。*\n\n—— 结局 · 治愈之路 ——`;
+                choices = [{ text: '🔄 重新开始', mood: 'calm', next: 'restart' }];
+                setTimeout(() => {
+                    if (!state.seenXiaobao) {
+                        showXiaobao('小宝想对你说：\n\n“你做到了。\n你打开了笼子，\n也抱住了自己。\n\n这就是我爱你的原因。\n\n以后也要好好爱自己，\n好吗？\n我爱你们。”💛');
+                    }
+                }, 800);
+                break;
+
+            default:
+                story = '故事从这里开始……';
+                choices = [{ text: '开始', mood: 'calm', next: 'infant' }];
+        }
+
+        storyText.textContent = story;
+
+        if (fragmentText) {
+            memoryFragment.style.display = 'block';
+            memoryFragment.textContent = '🔮 ' + fragmentText;
+        }
+
+        if (state.selfDoubt >= 15) unlockAchievement('high_doubt');
+        if (state.fragments.length >= 25) unlockAchievement('fragment_master');
+
+        choiceContainer.innerHTML = '';
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            if (choice.text.includes('打开') || choice.text.includes('钥匙') || choice.text.includes('放下') || choice.text.includes('陪你') || choice.text.includes('抱住')) {
+                btn.classList.add('special');
+            }
+            btn.textContent = choice.text;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!audioCtx) initAudio();
+                if (choice.effect) choice.effect();
+                if (choice.fragment) {
+                    state.fragments.push(choice.fragment);
+                }
+                if (choice.mood) {
+                    state.mood = choice.mood;
+                    if (audioCtx) startBGM(choice.mood);
+                }
+                if (choice.next === 'restart') {
+                    state = {
+                        stage: 'infant', mood: 'calm', nights: 0,
+                        selfDoubt: 0, fragments: [], achievements: state.achievements,
+                        ending: null, infantChoice: null, toddlerChoice: null,
+                        childChoice: null, teenChoice: null, nightChoices: [],
+                        finalChoice: null, totalChoices: 0, kindChoices: 0, braveChoices: 0,
+                        seenXiaobao: state.seenXiaobao
+                    };
+                    if (audioCtx) startBGM('calm');
+                    render();
+                    return;
+                }
+                if (choice.next) {
+                    state.stage = choice.next;
+                }
+                render();
+            });
+            choiceContainer.appendChild(btn);
+        });
+
+        if (state.stage === 'finalCage') {
+            showCageIllustration();
+        }
+    }
+
+    // ==================== 笼中心立绘 ====================
+    function showCageIllustration() {
+        illustrationContainer.style.display = 'flex';
+        illustrationContainer.innerHTML = `
+            <svg viewBox="0 0 260 260" width="260" height="260">
+                <defs>
+                    <radialGradient id="heartGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#ffb7c5" stop-opacity="0.7"/>
+                        <stop offset="100%" stop-color="#b33e5c" stop-opacity="0"/>
+                    </radialGradient>
+                    <radialGradient id="cageLight" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#f5d742" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#f5d742" stop-opacity="0"/>
+                    </radialGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="4" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <circle cx="130" cy="130" r="125" fill="url(#cageLight)" opacity="0.5">
+                    <animate attributeName="r" values="110;125;110" dur="5s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="130" cy="130" r="115" fill="url(#heartGlow)" opacity="0.25">
+                    <animate attributeName="r" values="105;115;105" dur="4s" repeatCount="indefinite"/>
+                </circle>
+
+                <rect x="65" y="55" width="130" height="160" rx="18" fill="none" stroke="#c0b7a8" stroke-width="6" stroke-dasharray="14 8" opacity="0.9"/>
+                <line x1="82" y1="55" x2="82" y2="215" stroke="#b8a99a" stroke-width="4.5"/>
+                <line x1="104" y1="55" x2="104" y2="215" stroke="#b8a99a" stroke-width="4.5"/>
+                <line x1="130" y1="55" x2="130" y2="215" stroke="#b8a99a" stroke-width="4.5"/>
+                <line x1="156" y1="55" x2="156" y2="215" stroke="#b8a99a" stroke-width="4.5"/>
+                <line x1="178" y1="55" x2="178" y2="215" stroke="#b8a99a" stroke-width="4.5"/>
+                <rect x="60" y="47" width="140" height="14" rx="7" fill="#9e8e7e" opacity="0.9"/>
+                <rect x="60" y="210" width="140" height="14" rx="7" fill="#9e8e7e" opacity="0.9"/>
+
+                <path d="M82 80 Q92 90 82 100 Q72 110 82 120" stroke="#6b5b4b" stroke-width="2.5" fill="none" opacity="0.35" stroke-dasharray="3 3"/>
+                <path d="M178 150 Q168 160 178 170 Q188 180 178 190" stroke="#6b5b4b" stroke-width="2.5" fill="none" opacity="0.35" stroke-dasharray="3 3"/>
+                <path d="M104 170 Q114 175 104 180" stroke="#6b5b4b" stroke-width="2" fill="none" opacity="0.25"/>
+                <path d="M156 75 Q146 80 156 85" stroke="#6b5b4b" stroke-width="2" fill="none" opacity="0.25"/>
+
+                <g class="locked-heart" filter="url(#glow)">
+                    <path d="M130 130 C130 102, 168 95, 168 125 C168 155, 130 178, 130 200 C130 178, 92 155, 92 125 C92 95, 130 102, 130 130 Z" 
+                          fill="#b33e5c" stroke="#ffb7c5" stroke-width="4" opacity="0.95"/>
+                    <ellipse cx="117" cy="120" rx="11" ry="9" fill="#ffd9e0" opacity="0.4"/>
+                    <ellipse cx="145" cy="155" rx="6" ry="5" fill="#ffd9e0" opacity="0.2"/>
+                </g>
+
+                <g transform="translate(195, 40) rotate(25)" opacity="0.95">
+                    <circle cx="0" cy="0" r="13" fill="#f5d742" stroke="#c9a227" stroke-width="2.5" filter="url(#glow)"/>
+                    <rect x="11" y="-4" width="30" height="8" rx="4" fill="#f5d742" stroke="#c9a227" stroke-width="2.5"/>
+                    <circle cx="38" cy="0" r="6" fill="#f5d742" stroke="#c9a227" stroke-width="2.5"/>
+                    <circle cx="38" cy="0" r="2.5" fill="#c9a227"/>
+                    <circle cx="-4" cy="-6" r="1.8" fill="#fff8e0" opacity="0.9"/>
+                </g>
+
+                <circle cx="70" cy="70" r="3" fill="#f5d742" opacity="0.7">
+                    <animate attributeName="cy" values="70;55;70" dur="3s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="190" cy="195" r="2.5" fill="#ffb7c5" opacity="0.6">
+                    <animate attributeName="cy" values="195;180;195" dur="3.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="100" cy="225" r="2.5" fill="#a3d0c2" opacity="0.6">
+                    <animate attributeName="cy" values="225;212;225" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="200" cy="110" r="2" fill="#7ee8fa" opacity="0.5">
+                    <animate attributeName="cy" values="110;100;110" dur="2.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="60" cy="165" r="2" fill="#f5d742" opacity="0.5">
+                    <animate attributeName="cy" values="165;155;165" dur="3.2s" repeatCount="indefinite"/>
+                </circle>
+
+                <g opacity="0.5">
+                    <path d="M55 130 C55 125, 60 123, 60 128 C60 133, 55 136, 55 140 C55 136, 50 133, 50 128 C50 123, 55 125, 55 130 Z" fill="#ffb7c5">
+                        <animate attributeName="opacity" values="0.5;0.15;0.5" dur="4s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M205 175 C205 170, 210 168, 210 173 C210 178, 205 181, 205 185 C205 181, 200 178, 200 173 C200 168, 205 170, 205 175 Z" fill="#ffb7c5">
+                        <animate attributeName="opacity" values="0.4;0.1;0.4" dur="3.5s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M130 230 C130 226, 134 224, 134 228 C134 232, 130 234, 130 237 C130 234, 126 232, 126 228 C126 224, 130 226, 130 230 Z" fill="#f5d742">
+                        <animate attributeName="opacity" values="0.35;0.1;0.35" dur="4.5s" repeatCount="indefinite"/>
+                    </path>
+                </g>
+            </svg>
+        `;
+    }
+
+    // ==================== 事件绑定 ====================
+    document.getElementById('saveBtn').addEventListener('click', (e) => {
+        e.stopPropagation(); saveGame();
+    });
+
+    document.getElementById('loadBtn').addEventListener('click', (e) => {
+        e.stopPropagation(); loadGame();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', (e) => {
+        e.stopPropagation(); resetGame();
+    });
+
+    window.addEventListener('load', () => { render(); });
+
+    document.body.addEventListener('click', () => {
+        if (!audioCtx) initAudio();
+    }, { once: true });
+
+    render();
+</script>
+</body>
+</html>
